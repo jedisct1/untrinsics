@@ -12,6 +12,13 @@
 #include <stdint.h>
 #include <string.h>
 
+#ifndef __has_attribute
+#    define __has_attribute(x) 0
+#endif
+#if !(__has_attribute(aligned) || defined(__GNUC__) || defined(__clang__) || defined(__attribute__))
+#    define __attribute__(x)
+#endif
+
 typedef union {
     uint8_t  b[16];
     uint32_t w[4];
