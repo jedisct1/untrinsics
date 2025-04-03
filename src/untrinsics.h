@@ -1,6 +1,7 @@
 /**
  * Untrinsics - Header-only portable implementations of common Intel intrinsics
  * for cryptographic implementations.
+ * https://github.com/jedisct1/untrinsics
  * (C) 2025 Frank Denis <j [at] pureftpd.org> - Public Domain.
  */
 
