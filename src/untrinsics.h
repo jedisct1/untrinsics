@@ -28,7 +28,7 @@ typedef union {
 
 /* clang-format off */
 
-static const uint8_t UNINTRINSICS_SBOX[256] __attribute__((aligned(64))) = {
+static const uint8_t UNTRINSICS_SBOX[256] __attribute__((aligned(64))) = {
     0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
     0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
     0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15,
@@ -47,7 +47,7 @@ static const uint8_t UNINTRINSICS_SBOX[256] __attribute__((aligned(64))) = {
     0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16
 };
 
-static const uint8_t UNINTRINSICS_INV_SBOX[256] __attribute__((aligned(64))) = {
+static const uint8_t UNTRINSICS_INV_SBOX[256] __attribute__((aligned(64))) = {
     0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb,
     0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87, 0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde, 0xe9, 0xcb,
     0x54, 0x7b, 0x94, 0x32, 0xa6, 0xc2, 0x23, 0x3d, 0xee, 0x4c, 0x95, 0x0b, 0x42, 0xfa, 0xc3, 0x4e,
@@ -72,9 +72,9 @@ static volatile uint8_t  untrinsics_optblocker_u8;
 static volatile uint32_t untrinsics_optblocker_u32;
 static volatile uint64_t untrinsics_optblocker_u64;
 
-#ifdef UNINTRINSICS_MITIGATE
+#ifdef UNTRINSICS_MITIGATE
 static inline uint8_t
-unintrinsics_sbox(const uint8_t x)
+untrinsics_sbox(const uint8_t x)
 {
     uint32_t optblocker_u32 = untrinsics_optblocker_u32;
     uint8_t  result         = 0;
@@ -82,13 +82,13 @@ unintrinsics_sbox(const uint8_t x)
     for (int i = 0; i < 256; i++) {
         uint32_t diff = (uint32_t) (i ^ x);
         uint32_t mask = ((((diff - 1) >> 29) ^ optblocker_u32) >> 2) * 0xff;
-        result |= UNINTRINSICS_SBOX[i] & (uint8_t) mask;
+        result |= UNTRINSICS_SBOX[i] & (uint8_t) mask;
     }
     return result;
 }
 
 static inline uint8_t
-unintrinsics_inv_sbox(const uint8_t x)
+untrinsics_inv_sbox(const uint8_t x)
 {
     uint32_t optblocker_u32 = untrinsics_optblocker_u32;
     uint8_t  result         = 0;
@@ -96,13 +96,13 @@ unintrinsics_inv_sbox(const uint8_t x)
     for (int i = 0; i < 256; i++) {
         uint32_t diff = (uint32_t) (i ^ x);
         uint32_t mask = ((((diff - 1) >> 29) ^ optblocker_u32) >> 2) * 0xff;
-        result |= UNINTRINSICS_INV_SBOX[i] & (uint8_t) mask;
+        result |= UNTRINSICS_INV_SBOX[i] & (uint8_t) mask;
     }
     return result;
 }
 #else
-#    define unintrinsics_sbox(x)     UNINTRINSICS_SBOX[x]
-#    define unintrinsics_inv_sbox(x) UNINTRINSICS_INV_SBOX[x]
+#    define untrinsics_sbox(x)     UNTRINSICS_SBOX[x]
+#    define untrinsics_inv_sbox(x) UNTRINSICS_INV_SBOX[x]
 #endif
 
 /* Multiply by x in GF(2^8) using the AES polynomial (usually compiled to branchless code) */
@@ -171,22 +171,22 @@ static inline void
 untrinsics_sub_shiftrows(uint8_t s[16])
 {
     uint8_t tmp[16];
-    tmp[0]  = unintrinsics_sbox(s[0]);
-    tmp[1]  = unintrinsics_sbox(s[5]);
-    tmp[2]  = unintrinsics_sbox(s[10]);
-    tmp[3]  = unintrinsics_sbox(s[15]);
-    tmp[4]  = unintrinsics_sbox(s[4]);
-    tmp[5]  = unintrinsics_sbox(s[9]);
-    tmp[6]  = unintrinsics_sbox(s[14]);
-    tmp[7]  = unintrinsics_sbox(s[3]);
-    tmp[8]  = unintrinsics_sbox(s[8]);
-    tmp[9]  = unintrinsics_sbox(s[13]);
-    tmp[10] = unintrinsics_sbox(s[2]);
-    tmp[11] = unintrinsics_sbox(s[7]);
-    tmp[12] = unintrinsics_sbox(s[12]);
-    tmp[13] = unintrinsics_sbox(s[1]);
-    tmp[14] = unintrinsics_sbox(s[6]);
-    tmp[15] = unintrinsics_sbox(s[11]);
+    tmp[0]  = untrinsics_sbox(s[0]);
+    tmp[1]  = untrinsics_sbox(s[5]);
+    tmp[2]  = untrinsics_sbox(s[10]);
+    tmp[3]  = untrinsics_sbox(s[15]);
+    tmp[4]  = untrinsics_sbox(s[4]);
+    tmp[5]  = untrinsics_sbox(s[9]);
+    tmp[6]  = untrinsics_sbox(s[14]);
+    tmp[7]  = untrinsics_sbox(s[3]);
+    tmp[8]  = untrinsics_sbox(s[8]);
+    tmp[9]  = untrinsics_sbox(s[13]);
+    tmp[10] = untrinsics_sbox(s[2]);
+    tmp[11] = untrinsics_sbox(s[7]);
+    tmp[12] = untrinsics_sbox(s[12]);
+    tmp[13] = untrinsics_sbox(s[1]);
+    tmp[14] = untrinsics_sbox(s[6]);
+    tmp[15] = untrinsics_sbox(s[11]);
     memcpy(s, tmp, 16);
 }
 
@@ -195,22 +195,22 @@ static inline void
 untrinsics_invsub_shiftrows(uint8_t s[16])
 {
     uint8_t tmp[16];
-    tmp[0]  = unintrinsics_inv_sbox(s[0]);
-    tmp[1]  = unintrinsics_inv_sbox(s[13]);
-    tmp[2]  = unintrinsics_inv_sbox(s[10]);
-    tmp[3]  = unintrinsics_inv_sbox(s[7]);
-    tmp[4]  = unintrinsics_inv_sbox(s[4]);
-    tmp[5]  = unintrinsics_inv_sbox(s[1]);
-    tmp[6]  = unintrinsics_inv_sbox(s[14]);
-    tmp[7]  = unintrinsics_inv_sbox(s[11]);
-    tmp[8]  = unintrinsics_inv_sbox(s[8]);
-    tmp[9]  = unintrinsics_inv_sbox(s[5]);
-    tmp[10] = unintrinsics_inv_sbox(s[2]);
-    tmp[11] = unintrinsics_inv_sbox(s[15]);
-    tmp[12] = unintrinsics_inv_sbox(s[12]);
-    tmp[13] = unintrinsics_inv_sbox(s[9]);
-    tmp[14] = unintrinsics_inv_sbox(s[6]);
-    tmp[15] = unintrinsics_inv_sbox(s[3]);
+    tmp[0]  = untrinsics_inv_sbox(s[0]);
+    tmp[1]  = untrinsics_inv_sbox(s[13]);
+    tmp[2]  = untrinsics_inv_sbox(s[10]);
+    tmp[3]  = untrinsics_inv_sbox(s[7]);
+    tmp[4]  = untrinsics_inv_sbox(s[4]);
+    tmp[5]  = untrinsics_inv_sbox(s[1]);
+    tmp[6]  = untrinsics_inv_sbox(s[14]);
+    tmp[7]  = untrinsics_inv_sbox(s[11]);
+    tmp[8]  = untrinsics_inv_sbox(s[8]);
+    tmp[9]  = untrinsics_inv_sbox(s[5]);
+    tmp[10] = untrinsics_inv_sbox(s[2]);
+    tmp[11] = untrinsics_inv_sbox(s[15]);
+    tmp[12] = untrinsics_inv_sbox(s[12]);
+    tmp[13] = untrinsics_inv_sbox(s[9]);
+    tmp[14] = untrinsics_inv_sbox(s[6]);
+    tmp[15] = untrinsics_inv_sbox(s[3]);
     memcpy(s, tmp, 16);
 }
 
@@ -257,10 +257,10 @@ untrinsics_rot_word(const uint32_t x)
 static inline uint32_t
 untrinsics_sub_word(const uint32_t x)
 {
-    return ((uint32_t) unintrinsics_sbox((x >> 24) & 0xff) << 24) |
-           ((uint32_t) unintrinsics_sbox((x >> 16) & 0xff) << 16) |
-           ((uint32_t) unintrinsics_sbox((x >> 8) & 0xff) << 8) |
-           ((uint32_t) unintrinsics_sbox(x & 0xff));
+    return ((uint32_t) untrinsics_sbox((x >> 24) & 0xff) << 24) |
+           ((uint32_t) untrinsics_sbox((x >> 16) & 0xff) << 16) |
+           ((uint32_t) untrinsics_sbox((x >> 8) & 0xff) << 8) |
+           ((uint32_t) untrinsics_sbox(x & 0xff));
 }
 
 /* Copy __m128i value */

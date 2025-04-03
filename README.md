@@ -52,7 +52,7 @@ It targets a small set of the most commonly used operations in cryptographic imp
 
 The emulated instructions include mitigations against timing-based side channels. However, this is a best-effort approach and does not replace hardware countermeasures or CPU-specific assembly code.
 
-Because constant-time operation incurs significant performance costs, some AES instructions do not run in constant time by default; additional mitigations can be enabled by defining `UNINTRINSICS_MITIGATE` before including this file. Note that these performance costs might lead users to disable cryptographic features entirely. If constant-time behavior is critical, effective mitigations—such as masking and bitslicing—should be applied at higher levels in your implementation.
+Because constant-time operation incurs significant performance costs, some AES instructions do not run in constant time by default; additional mitigations can be enabled by defining `UNTRINSICS_MITIGATE` before including this file. Note that these performance costs might lead users to disable cryptographic features entirely. If constant-time behavior is critical, effective mitigations—such as masking and bitslicing—should be applied at higher levels in your implementation.
 
 ---
 
