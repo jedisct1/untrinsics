@@ -67,7 +67,7 @@ _mm512_loadu_si512(const void *ptr)
 #define _mm512_storeu_si512 untrinsics__mm512_storeu_si512
 /* Store (“unaligned”) our fake-512-bit vector back to memory: */
 static inline void
-_mm512_storeu_si512(void *ptr, __m512i v)
+_mm512_storeu_si512(void *ptr, const __m512i v)
 {
     char *p = (char *) ptr;
     _mm_storeu_si128((__m128i *) (p + 0), v.a);
@@ -80,7 +80,7 @@ _mm512_storeu_si512(void *ptr, __m512i v)
 #define _mm512_xor_si512 untrinsics__mm512_xor_si512
 /* Bitwise XOR of two “512-bit” vectors: */
 static inline __m512i
-_mm512_xor_si512(__m512i x, __m512i y)
+_mm512_xor_si512(const __m512i x, const __m512i y)
 {
     __m512i r;
     r.a = _mm_xor_si128(x.a, y.a);
@@ -94,7 +94,7 @@ _mm512_xor_si512(__m512i x, __m512i y)
 #define _mm512_or_si512 untrinsics__mm512_or_si512
 /* Bitwise OR of two “512-bit” vectors (4×128-bit lanes) */
 static inline __m512i
-_mm512_or_si512(__m512i x, __m512i y)
+_mm512_or_si512(const __m512i x, const __m512i y)
 {
     __m512i r;
     r.a = _mm_or_si128(x.a, y.a);
@@ -108,7 +108,7 @@ _mm512_or_si512(__m512i x, __m512i y)
 #define _mm512_and_si512 untrinsics__mm512_and_si512
 /* Bitwise AND of two “512-bit” vectors (4×128-bit lanes) */
 static inline __m512i
-_mm512and_si512(__m512i x, __m512i y)
+_mm512and_si512(const __m512i x, const __m512i y)
 {
     __m512i r;
     r.a = _mm_and_si128(x.a, y.a);
@@ -122,7 +122,7 @@ _mm512and_si512(__m512i x, __m512i y)
 #define _mm512_aesenc_epi128 untrinsics__mm512_aesenc_epi128
 /* One AESENC round on each 128-bit lane of a 512-bit vector: */
 static inline __m512i
-_mm512_aesenc_epi128(__m512i state, __m512i roundkey)
+_mm512_aesenc_epi128(const __m512i state, const __m512i roundkey)
 {
     __m512i r;
     r.a = _mm_aesenc_si128(state.a, roundkey.a);
@@ -141,7 +141,7 @@ _mm512_aesenc_epi128(__m512i state, __m512i roundkey)
  *  bits [7:6] → result.d from    b
  */
 static inline __m512i
-_mm512_shuffle_i32x4(__m512i a, __m512i b, const int imm8)
+_mm512_shuffle_i32x4(const __m512i a, const __m512i b, const int imm8)
 {
     __m512i r;
 
@@ -208,7 +208,7 @@ _mm512_shuffle_i32x4(__m512i a, __m512i b, const int imm8)
 #define _mm512_extracti32x4_epi32 untrinsics__mm512_extracti32x4_epi32
 /* Extract 128-bit lane of four 32-bit integers from a “512-bit” vector */
 static inline __m128i
-_mm512_extracti32x4_epi32(__m512i v, const int imm8)
+_mm512_extracti32x4_epi32(const __m512i v, const int imm8)
 {
     switch (imm8 & 0x3) {
     case 0:
@@ -222,11 +222,62 @@ _mm512_extracti32x4_epi32(__m512i v, const int imm8)
     }
 }
 
+#undef _mm512_broadcast_i32x4
+#define _mm512_broadcast_i32x4 untrinsics__mm512_broadcast_i32x4
+/* Broadcast a 128-bit vector of four 32-bit integers into all lanes of a 512-bit vector */
+static inline __m512i
+_mm512_broadcast_i32x4(const __m128i v)
+{
+    __m512i r;
+    r.a = v;
+    r.b = v;
+    r.c = v;
+    r.d = v;
+    return r;
+}
+
+#undef _mm512_castsi128_si512
+#define _mm512_castsi128_si512 untrinsics__mm512_castsi128_si512
+/* Cast a 128-bit integer vector into a 512-bit one */
+static inline __m512i
+_mm512_castsi128_si512(const __m128i v)
+{
+    __m512i r;
+    r.a = v;
+    r.b = _mm_setzero_si128();
+    r.c = _mm_setzero_si128();
+    r.d = _mm_setzero_si128();
+    return r;
+}
+
+#undef _mm512_inserti32x4
+#define _mm512_inserti32x4 untrinsics__mm512_inserti32x4
+/* Insert a 128-bit vector of four 32-bit integers into a 512-bit vector */
+static inline __m512i
+_mm512_inserti32x4(__m512i v512, const __m128i v128, const int imm8)
+{
+    switch (imm8 & 0x3) {
+    case 0:
+        v512.a = v128;
+        break;
+    case 1:
+        v512.b = v128;
+        break;
+    case 2:
+        v512.c = v128;
+        break;
+    default:
+        v512.d = v128;
+        break;
+    }
+    return v512;
+}
+
 #undef _mm512_srli_epi32
 #define _mm512_srli_epi32 untrinsics__mm512_srli_epi32
 /* Logical right shift of each 32-bit element by imm8 */
 static inline __m512i
-_mm512_srli_epi32(__m512i v, const int imm8)
+_mm512_srli_epi32(const __m512i v, const int imm8)
 {
     __m512i r;
     r.a = _mm_srli_epi32(v.a, imm8);
@@ -240,7 +291,7 @@ _mm512_srli_epi32(__m512i v, const int imm8)
 #define _mm512_slli_epi32 untrinsics__mm512_slli_epi32
 /* Logical left shift of each 32-bit element by imm8 */
 static inline __m512i
-_mm512_slli_epi32(__m512i v, const int imm8)
+_mm512_slli_epi32(const __m512i v, const int imm8)
 {
     __m512i r;
     r.a = _mm_slli_epi32(v.a, imm8);
