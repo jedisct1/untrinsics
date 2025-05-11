@@ -204,6 +204,24 @@ _mm512_shuffle_i32x4(__m512i a, __m512i b, const int imm8)
     return r;
 }
 
+#undef _mm512_extracti32x4_epi32
+#define _mm512_extracti32x4_epi32 untrinsics__mm512_extracti32x4_epi32
+/* Extract 128-bit lane of four 32-bit integers from a “512-bit” vector */
+static inline __m128i
+_mm512_extracti32x4_epi32(__m512i v, const int imm8)
+{
+    switch (imm8 & 0x3) {
+    case 0:
+        return v.a;
+    case 1:
+        return v.b;
+    case 2:
+        return v.c;
+    default:
+        return v.d;
+    }
+}
+
 #undef _mm512_srli_epi32
 #define _mm512_srli_epi32 untrinsics__mm512_srli_epi32
 /* Logical right shift of each 32-bit element by imm8 */
