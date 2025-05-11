@@ -10,10 +10,15 @@
 
 #define __untrinsics_avx512__ 1
 
-#ifndef __untrinsics__ /* untrinsics.h */
-#    include <immintrin.h>
-#endif
 #include <stdint.h>
+#ifndef __untrinsics__ /* untrinsics.h */
+#    if defined(__AES__) || (defined(_MSC_VER) && defined(__AVX__))
+#        include <smmintrin.h>
+#        include <wmmintrin.h>
+#    else
+#        include "untrinsics.h"
+#    endif
+#endif
 
 #ifndef __has_attribute
 #    define __has_attribute(x) 0

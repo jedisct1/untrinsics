@@ -530,6 +530,42 @@ _mm_setr_epi8(const int8_t b0, const int8_t b1, const int8_t b2, const int8_t b3
     return r;
 }
 
+/* Set __m128i from 16 int values */
+static inline __m128i
+_mm_setr_epi32(const int e0, const int e1, const int e2, const int e3)
+{
+    __m128i v;
+    v.w[0] = (uint32_t) e0;
+    v.w[1] = (uint32_t) e1;
+    v.w[2] = (uint32_t) e2;
+    v.w[3] = (uint32_t) e3;
+    return v;
+}
+
+// Logical right shift each 32-bit lane by imm8
+static inline __m128i
+_mm_srli_epi32(const __m128i v, const int imm8)
+{
+    __m128i r;
+    r.w[0] = v.w[0] >> imm8;
+    r.w[1] = v.w[1] >> imm8;
+    r.w[2] = v.w[2] >> imm8;
+    r.w[3] = v.w[3] >> imm8;
+    return r;
+}
+
+// Logical left shift each 32-bit lane by imm8
+static inline __m128i
+_mm_slli_epi32(const __m128i v, const int imm8)
+{
+    __m128i r;
+    r.w[0] = v.w[0] << imm8;
+    r.w[1] = v.w[1] << imm8;
+    r.w[2] = v.w[2] << imm8;
+    r.w[3] = v.w[3] << imm8;
+    return r;
+}
+
 /* Set __m128i to zero */
 static inline __m128i
 _mm_setzero_si128(void)
