@@ -236,6 +236,33 @@ _mm512_broadcast_i32x4(const __m128i v)
     return r;
 }
 
+#undef _mm512_mask_broadcast_i32x4
+#define _mm512_mask_broadcast_i32x4 untrinsics__mm512_mask_broadcast_i32x4
+/* Masked broadcast of a 128-bit vector of four 32-bit ints into all 128-bit lanes: */
+static inline __m512i
+_mm512_mask_broadcast_i32x4(const __m512i src, const int k, const __m128i v)
+{
+    const __m512i b = _mm512_broadcast_i32x4(v);
+    __m512i       mask, tmp, r;
+    int           i;
+
+    for (i = 0; i < 4; i++) {
+        ((int32_t *) &mask.a)[i] = (k & (1 << i)) ? -1 : 0;
+        ((int32_t *) &mask.b)[i] = (k & (1 << (i + 4))) ? -1 : 0;
+        ((int32_t *) &mask.c)[i] = (k & (1 << (i + 8))) ? -1 : 0;
+        ((int32_t *) &mask.d)[i] = (k & (1 << (i + 12))) ? -1 : 0;
+    }
+    tmp.a = _mm_and_si128(_mm_xor_si128(src.a, b.a), mask.a);
+    tmp.b = _mm_and_si128(_mm_xor_si128(src.b, b.b), mask.b);
+    tmp.c = _mm_and_si128(_mm_xor_si128(src.c, b.c), mask.c);
+    tmp.d = _mm_and_si128(_mm_xor_si128(src.d, b.d), mask.d);
+    r.a   = _mm_xor_si128(src.a, tmp.a);
+    r.b   = _mm_xor_si128(src.b, tmp.b);
+    r.c   = _mm_xor_si128(src.c, tmp.c);
+    r.d   = _mm_xor_si128(src.d, tmp.d);
+    return r;
+}
+
 #undef _mm512_castsi128_si512
 #define _mm512_castsi128_si512 untrinsics__mm512_castsi128_si512
 /* Cast a 128-bit integer vector into a 512-bit one */
