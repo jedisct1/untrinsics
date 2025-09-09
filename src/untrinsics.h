@@ -542,7 +542,7 @@ _mm_setr_epi32(const int e0, const int e1, const int e2, const int e3)
     return v;
 }
 
-// Logical right shift each 32-bit lane by imm8
+/* Logical right shift each 32-bit lane by imm8 */
 static inline __m128i
 _mm_srli_epi32(const __m128i v, const int imm8)
 {
@@ -554,7 +554,7 @@ _mm_srli_epi32(const __m128i v, const int imm8)
     return r;
 }
 
-// Logical left shift each 32-bit lane by imm8
+/* Logical left shift each 32-bit lane by imm8 */
 static inline __m128i
 _mm_slli_epi32(const __m128i v, const int imm8)
 {
@@ -563,6 +563,26 @@ _mm_slli_epi32(const __m128i v, const int imm8)
     r.w[1] = v.w[1] << imm8;
     r.w[2] = v.w[2] << imm8;
     r.w[3] = v.w[3] << imm8;
+    return r;
+}
+
+/* Logical right shift each 64-bit lane by imm8 */
+static inline __m128i
+_mm_srli_epi64(const __m128i v, const int imm8)
+{
+    __m128i r;
+    r.q[0] = v.q[0] >> imm8;
+    r.q[1] = v.q[1] >> imm8;
+    return r;
+}
+
+/* Logical left shift each 64-bit lane by imm8 */
+static inline __m128i
+_mm_slli_epi64(const __m128i v, const int imm8)
+{
+    __m128i r;
+    r.q[0] = v.q[0] << imm8;
+    r.q[1] = v.q[1] << imm8;
     return r;
 }
 
