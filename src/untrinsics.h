@@ -566,6 +566,34 @@ _mm_slli_epi32(const __m128i v, const int imm8)
     return r;
 }
 
+/* Logical right shift each 16-bit lane by imm8 */
+static inline __m128i
+_mm_srli_epi16(const __m128i v, const int imm8)
+{
+    __m128i r;
+    for (int i = 0; i < 8; i++) {
+        uint16_t val = (uint16_t)v.b[i * 2] | ((uint16_t)v.b[i * 2 + 1] << 8);
+        val >>= imm8;
+        r.b[i * 2] = (uint8_t)(val & 0xff);
+        r.b[i * 2 + 1] = (uint8_t)(val >> 8);
+    }
+    return r;
+}
+
+/* Logical left shift each 16-bit lane by imm8 */
+static inline __m128i
+_mm_slli_epi16(const __m128i v, const int imm8)
+{
+    __m128i r;
+    for (int i = 0; i < 8; i++) {
+        uint16_t val = (uint16_t)v.b[i * 2] | ((uint16_t)v.b[i * 2 + 1] << 8);
+        val <<= imm8;
+        r.b[i * 2] = (uint8_t)(val & 0xff);
+        r.b[i * 2 + 1] = (uint8_t)(val >> 8);
+    }
+    return r;
+}
+
 /* Logical right shift each 64-bit lane by imm8 */
 static inline __m128i
 _mm_srli_epi64(const __m128i v, const int imm8)
