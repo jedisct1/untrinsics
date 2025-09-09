@@ -595,6 +595,36 @@ _mm_setzero_si128(void)
     return r;
 }
 
+/* Set all 16 bytes to the same 8-bit value */
+static inline __m128i
+_mm_set1_epi8(const int8_t a)
+{
+    __m128i r;
+    for (int i = 0; i < 16; i++)
+        r.b[i] = (uint8_t) a;
+    return r;
+}
+
+/* Add 8-bit integers in two __m128i values */
+static inline __m128i
+_mm_add_epi8(const __m128i a, const __m128i b)
+{
+    __m128i r;
+    for (int i = 0; i < 16; i++)
+        r.b[i] = (uint8_t) (a.b[i] + b.b[i]);
+    return r;
+}
+
+/* Subtract 8-bit integers in two __m128i values */
+static inline __m128i
+_mm_sub_epi8(const __m128i a, const __m128i b)
+{
+    __m128i r;
+    for (int i = 0; i < 16; i++)
+        r.b[i] = (uint8_t) (a.b[i] - b.b[i]);
+    return r;
+}
+
 /* Add 64-bit integers in two __m128i values */
 static inline __m128i
 _mm_add_epi64(const __m128i a, const __m128i b)
