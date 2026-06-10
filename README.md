@@ -1,27 +1,27 @@
-# 🧩 Untrinsics
+# Untrinsics
 
 **Untrinsics** is a single-header, portable implementation of commonly used Intel intrinsics — especially for cryptographic operations like AES — in plain, portable C.
 
 It's ideal for environments where hardware intrinsics are unavailable, like embedded systems, WebAssembly, or just cross-platform sanity.
 
-📦 **Header-only**  
-💻 **No dependencies**  
-🔐 **Crypto-friendly**  
-📐 **Bit-accurate with Intel’s original instructions**
+**Header-only**
+**No dependencies**
+**Crypto-friendly**
+**Bit-accurate with Intel’s original instructions**
 
 ---
 
-## ✨ Features
+## Features
 
-- ✅ Drop-in replacements for a wide range of Intel intrinsics
-- 🔐 AES-specific instructions like `_mm_aesenc_si128`, `_mm_aesdec_si128`, `_mm_aeskeygenassist_si128`, etc.
-- 📦 Implements `__m128i` with dual access as bytes, 32-bit words, and 64-bit words
-- 🛠 Bitwise ops, shifting, and shuffle operations
-- 🧪 Suitable for test suites and cross-platform builds
+- Drop-in replacements for a wide range of Intel intrinsics
+- AES-specific instructions like `_mm_aesenc_si128`, `_mm_aesdec_si128`, `_mm_aeskeygenassist_si128`, etc.
+- Implements `__m128i` with dual access as bytes, 32-bit words, and 64-bit words
+- Bitwise ops, shifting, and shuffle operations
+- Suitable for test suites and cross-platform builds
 
 ---
 
-## 📄 Usage
+## Usage
 
 Simply include the header in your project:
 
@@ -33,7 +33,7 @@ That’s it. No linking, no build flags, no fuss.
 
 ---
 
-## 🤔 Why?
+## Why?
 
 Because sometimes you want or need Intel-style cryptographic instructions without depending on a specific CPU or compiler. This is particularly useful for:
 
@@ -48,7 +48,7 @@ It targets a small set of the most commonly used operations in cryptographic imp
 
 ---
 
-## 🔒 Constant-Time Considerations
+## Constant-Time Considerations
 
 The emulated instructions include mitigations against timing-based side channels. However, this is a best-effort approach and does not replace hardware countermeasures or CPU-specific assembly code.
 
@@ -56,16 +56,16 @@ Because constant-time operation incurs significant performance costs, some AES i
 
 ---
 
-## ⚖️ License
+## License
 
-**Public Domain.**  
-No copyright.  
-No license.  
-No attribution required.  
+**Public Domain.**
+No copyright.
+No license.
+No attribution required.
 Use it however you like.
 
 ---
 
-## 💬 Feedback
+## Feedback
 
 Open issues, suggest features, or just say hi. PRs are welcome!
