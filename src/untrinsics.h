@@ -13,11 +13,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#if defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && \
-    __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-#    error "untrinsics requires a little-endian target"
-#endif
-
 #ifndef __has_attribute
 #    define __has_attribute(x) 0
 #endif
@@ -30,6 +25,35 @@ typedef union {
     uint32_t w[4];
     uint64_t q[2];
 } __m128i __attribute__((aligned(16)));
+
+static inline uint32_t
+untrinsics_load32(const uint8_t *p)
+{
+    return (uint32_t) p[0] | ((uint32_t) p[1] << 8) | ((uint32_t) p[2] << 16) |
+           ((uint32_t) p[3] << 24);
+}
+
+static inline void
+untrinsics_store32(uint8_t *p, const uint32_t v)
+{
+    p[0] = (uint8_t) (v & 0xff);
+    p[1] = (uint8_t) ((v >> 8) & 0xff);
+    p[2] = (uint8_t) ((v >> 16) & 0xff);
+    p[3] = (uint8_t) ((v >> 24) & 0xff);
+}
+
+static inline uint64_t
+untrinsics_load64(const uint8_t *p)
+{
+    return (uint64_t) untrinsics_load32(p) | ((uint64_t) untrinsics_load32(p + 4) << 32);
+}
+
+static inline void
+untrinsics_store64(uint8_t *p, const uint64_t v)
+{
+    untrinsics_store32(p, (uint32_t) (v & 0xffffffff));
+    untrinsics_store32(p + 4, (uint32_t) (v >> 32));
+}
 
 /* clang-format off */
 
@@ -337,15 +361,15 @@ static inline __m128i
 _mm_aeskeygenassist_si128(const __m128i a, const uint8_t rcon)
 {
     __m128i        dst;
-    const uint32_t x1  = a.w[1];
-    const uint32_t x3  = a.w[3];
+    const uint32_t x1  = untrinsics_load32(a.b + 4);
+    const uint32_t x3  = untrinsics_load32(a.b + 12);
     const uint32_t sx1 = untrinsics_sub_word(x1);
     const uint32_t sx3 = untrinsics_sub_word(x3);
 
-    dst.w[0] = sx1;
-    dst.w[1] = untrinsics_rot_word(sx1) ^ rcon;
-    dst.w[2] = sx3;
-    dst.w[3] = untrinsics_rot_word(sx3) ^ rcon;
+    untrinsics_store32(dst.b, sx1);
+    untrinsics_store32(dst.b + 4, untrinsics_rot_word(sx1) ^ rcon);
+    untrinsics_store32(dst.b + 8, sx3);
+    untrinsics_store32(dst.b + 12, untrinsics_rot_word(sx3) ^ rcon);
     return dst;
 }
 
@@ -356,8 +380,8 @@ static inline __m128i
 _mm_clmulepi64_si128(const __m128i a, const __m128i b, const int imm)
 {
     __m128i  r;
-    uint64_t x    = (imm & 1) ? a.q[1] : a.q[0];
-    uint64_t y    = (imm & 0x10) ? b.q[1] : b.q[0];
+    uint64_t x    = untrinsics_load64(a.b + ((imm & 1) ? 8 : 0));
+    uint64_t y    = untrinsics_load64(b.b + ((imm & 0x10) ? 8 : 0));
     uint64_t r_lo = 0, r_hi = 0;
     {
         uint64_t bit  = y & 1ULL;
@@ -370,8 +394,8 @@ _mm_clmulepi64_si128(const __m128i a, const __m128i b, const int imm)
         r_lo ^= (x << i) & mask;
         r_hi ^= (x >> (64 - i)) & mask;
     }
-    r.q[0] = r_lo;
-    r.q[1] = r_hi;
+    untrinsics_store64(r.b, r_lo);
+    untrinsics_store64(r.b + 8, r_hi);
     return r;
 }
 
@@ -426,8 +450,8 @@ static inline __m128i
 _mm_set_epi64x(const long long high, const long long low)
 {
     __m128i r;
-    r.q[0] = (uint64_t) low;
-    r.q[1] = (uint64_t) high;
+    untrinsics_store64(r.b, (uint64_t) low);
+    untrinsics_store64(r.b + 8, (uint64_t) high);
     return r;
 }
 
@@ -500,11 +524,9 @@ _mm_shuffle_epi8(const __m128i a, const __m128i b)
 static inline __m128i
 _mm_loadu_si64(const void* const mem_addr)
 {
-    __m128i  r;
-    uint64_t tmp;
-    memcpy(&tmp, mem_addr, 8);
-    r.q[0] = tmp;
-    r.q[1] = 0;
+    __m128i r;
+    memcpy(r.b, mem_addr, 8);
+    memset(r.b + 8, 0, 8);
     return r;
 }
 
@@ -540,10 +562,10 @@ static inline __m128i
 _mm_setr_epi32(const int e0, const int e1, const int e2, const int e3)
 {
     __m128i v;
-    v.w[0] = (uint32_t) e0;
-    v.w[1] = (uint32_t) e1;
-    v.w[2] = (uint32_t) e2;
-    v.w[3] = (uint32_t) e3;
+    untrinsics_store32(v.b, (uint32_t) e0);
+    untrinsics_store32(v.b + 4, (uint32_t) e1);
+    untrinsics_store32(v.b + 8, (uint32_t) e2);
+    untrinsics_store32(v.b + 12, (uint32_t) e3);
     return v;
 }
 
@@ -556,10 +578,8 @@ _mm_srli_epi32(const __m128i v, const int imm8)
         memset(r.b, 0, 16);
         return r;
     }
-    r.w[0] = v.w[0] >> imm8;
-    r.w[1] = v.w[1] >> imm8;
-    r.w[2] = v.w[2] >> imm8;
-    r.w[3] = v.w[3] >> imm8;
+    for (int i = 0; i < 4; i++)
+        untrinsics_store32(r.b + 4 * i, untrinsics_load32(v.b + 4 * i) >> imm8);
     return r;
 }
 
@@ -572,10 +592,8 @@ _mm_slli_epi32(const __m128i v, const int imm8)
         memset(r.b, 0, 16);
         return r;
     }
-    r.w[0] = v.w[0] << imm8;
-    r.w[1] = v.w[1] << imm8;
-    r.w[2] = v.w[2] << imm8;
-    r.w[3] = v.w[3] << imm8;
+    for (int i = 0; i < 4; i++)
+        untrinsics_store32(r.b + 4 * i, untrinsics_load32(v.b + 4 * i) << imm8);
     return r;
 }
 
@@ -624,8 +642,8 @@ _mm_srli_epi64(const __m128i v, const int imm8)
         memset(r.b, 0, 16);
         return r;
     }
-    r.q[0] = v.q[0] >> imm8;
-    r.q[1] = v.q[1] >> imm8;
+    untrinsics_store64(r.b, untrinsics_load64(v.b) >> imm8);
+    untrinsics_store64(r.b + 8, untrinsics_load64(v.b + 8) >> imm8);
     return r;
 }
 
@@ -638,8 +656,8 @@ _mm_slli_epi64(const __m128i v, const int imm8)
         memset(r.b, 0, 16);
         return r;
     }
-    r.q[0] = v.q[0] << imm8;
-    r.q[1] = v.q[1] << imm8;
+    untrinsics_store64(r.b, untrinsics_load64(v.b) << imm8);
+    untrinsics_store64(r.b + 8, untrinsics_load64(v.b + 8) << imm8);
     return r;
 }
 
@@ -687,8 +705,8 @@ static inline __m128i
 _mm_add_epi64(const __m128i a, const __m128i b)
 {
     __m128i r;
-    r.q[0] = a.q[0] + b.q[0];
-    r.q[1] = a.q[1] + b.q[1];
+    untrinsics_store64(r.b, untrinsics_load64(a.b) + untrinsics_load64(b.b));
+    untrinsics_store64(r.b + 8, untrinsics_load64(a.b + 8) + untrinsics_load64(b.b + 8));
     return r;
 }
 
@@ -697,8 +715,8 @@ static inline __m128i
 _mm_sub_epi64(const __m128i a, const __m128i b)
 {
     __m128i r;
-    r.q[0] = a.q[0] - b.q[0];
-    r.q[1] = a.q[1] - b.q[1];
+    untrinsics_store64(r.b, untrinsics_load64(a.b) - untrinsics_load64(b.b));
+    untrinsics_store64(r.b + 8, untrinsics_load64(a.b + 8) - untrinsics_load64(b.b + 8));
     return r;
 }
 
