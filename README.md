@@ -1,13 +1,13 @@
 # Untrinsics
 
-**Untrinsics** is a single-header, portable implementation of commonly used Intel intrinsics — especially for cryptographic operations like AES — in plain, portable C.
+Untrinsics is a single-header, portable implementation of commonly used Intel intrinsics — especially for cryptographic operations like AES — in plain, portable C.
 
 It's ideal for environments where hardware intrinsics are unavailable, like embedded systems, WebAssembly, or just cross-platform sanity.
 
-**Header-only**
-**No dependencies**
-**Crypto-friendly**
-**Bit-accurate with Intel’s original instructions**
+Header-only
+No dependencies
+Crypto-friendly
+Bit-accurate with Intel’s original instructions
 
 ---
 
@@ -58,7 +58,7 @@ Because constant-time operation incurs significant performance costs, some AES i
 
 ## License
 
-**Public Domain.**
+Public Domain.
 No copyright.
 No license.
 No attribution required.
