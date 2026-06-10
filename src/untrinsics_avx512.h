@@ -108,7 +108,7 @@ _mm512_or_si512(const __m512i x, const __m512i y)
 #define _mm512_and_si512 untrinsics__mm512_and_si512
 /* Bitwise AND of two “512-bit” vectors (4×128-bit lanes) */
 static inline __m512i
-_mm512and_si512(const __m512i x, const __m512i y)
+_mm512_and_si512(const __m512i x, const __m512i y)
 {
     __m512i r;
     r.a = _mm_and_si128(x.a, y.a);
@@ -244,14 +244,12 @@ _mm512_mask_broadcast_i32x4(const __m512i src, const int k, const __m128i v)
 {
     const __m512i b = _mm512_broadcast_i32x4(v);
     __m512i       mask, tmp, r;
-    int           i;
 
-    for (i = 0; i < 4; i++) {
-        ((int32_t *) &mask.a)[i] = (k & (1 << i)) ? -1 : 0;
-        ((int32_t *) &mask.b)[i] = (k & (1 << (i + 4))) ? -1 : 0;
-        ((int32_t *) &mask.c)[i] = (k & (1 << (i + 8))) ? -1 : 0;
-        ((int32_t *) &mask.d)[i] = (k & (1 << (i + 12))) ? -1 : 0;
-    }
+    mask.a = _mm_setr_epi32(-((k >> 0) & 1), -((k >> 1) & 1), -((k >> 2) & 1), -((k >> 3) & 1));
+    mask.b = _mm_setr_epi32(-((k >> 4) & 1), -((k >> 5) & 1), -((k >> 6) & 1), -((k >> 7) & 1));
+    mask.c = _mm_setr_epi32(-((k >> 8) & 1), -((k >> 9) & 1), -((k >> 10) & 1), -((k >> 11) & 1));
+    mask.d =
+        _mm_setr_epi32(-((k >> 12) & 1), -((k >> 13) & 1), -((k >> 14) & 1), -((k >> 15) & 1));
     tmp.a = _mm_and_si128(_mm_xor_si128(src.a, b.a), mask.a);
     tmp.b = _mm_and_si128(_mm_xor_si128(src.b, b.b), mask.b);
     tmp.c = _mm_and_si128(_mm_xor_si128(src.c, b.c), mask.c);

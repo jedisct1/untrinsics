@@ -13,6 +13,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#if defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && \
+    __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#    error "untrinsics requires a little-endian target"
+#endif
+
 #ifndef __has_attribute
 #    define __has_attribute(x) 0
 #endif
@@ -542,11 +547,15 @@ _mm_setr_epi32(const int e0, const int e1, const int e2, const int e3)
     return v;
 }
 
-/* Logical right shift each 32-bit lane by imm8 */
+/* Logical right shift each 32-bit lane by imm8; counts above 31 zero the result */
 static inline __m128i
 _mm_srli_epi32(const __m128i v, const int imm8)
 {
     __m128i r;
+    if ((unsigned int) imm8 > 31) {
+        memset(r.b, 0, 16);
+        return r;
+    }
     r.w[0] = v.w[0] >> imm8;
     r.w[1] = v.w[1] >> imm8;
     r.w[2] = v.w[2] >> imm8;
@@ -554,11 +563,15 @@ _mm_srli_epi32(const __m128i v, const int imm8)
     return r;
 }
 
-/* Logical left shift each 32-bit lane by imm8 */
+/* Logical left shift each 32-bit lane by imm8; counts above 31 zero the result */
 static inline __m128i
 _mm_slli_epi32(const __m128i v, const int imm8)
 {
     __m128i r;
+    if ((unsigned int) imm8 > 31) {
+        memset(r.b, 0, 16);
+        return r;
+    }
     r.w[0] = v.w[0] << imm8;
     r.w[1] = v.w[1] << imm8;
     r.w[2] = v.w[2] << imm8;
@@ -566,49 +579,65 @@ _mm_slli_epi32(const __m128i v, const int imm8)
     return r;
 }
 
-/* Logical right shift each 16-bit lane by imm8 */
+/* Logical right shift each 16-bit lane by imm8; counts above 15 zero the result */
 static inline __m128i
 _mm_srli_epi16(const __m128i v, const int imm8)
 {
     __m128i r;
+    if ((unsigned int) imm8 > 15) {
+        memset(r.b, 0, 16);
+        return r;
+    }
     for (int i = 0; i < 8; i++) {
-        uint16_t val = (uint16_t)v.b[i * 2] | ((uint16_t)v.b[i * 2 + 1] << 8);
+        uint32_t val = (uint32_t) v.b[i * 2] | ((uint32_t) v.b[i * 2 + 1] << 8);
         val >>= imm8;
-        r.b[i * 2] = (uint8_t)(val & 0xff);
-        r.b[i * 2 + 1] = (uint8_t)(val >> 8);
+        r.b[i * 2]     = (uint8_t) (val & 0xff);
+        r.b[i * 2 + 1] = (uint8_t) ((val >> 8) & 0xff);
     }
     return r;
 }
 
-/* Logical left shift each 16-bit lane by imm8 */
+/* Logical left shift each 16-bit lane by imm8; counts above 15 zero the result */
 static inline __m128i
 _mm_slli_epi16(const __m128i v, const int imm8)
 {
     __m128i r;
+    if ((unsigned int) imm8 > 15) {
+        memset(r.b, 0, 16);
+        return r;
+    }
     for (int i = 0; i < 8; i++) {
-        uint16_t val = (uint16_t)v.b[i * 2] | ((uint16_t)v.b[i * 2 + 1] << 8);
+        uint32_t val = (uint32_t) v.b[i * 2] | ((uint32_t) v.b[i * 2 + 1] << 8);
         val <<= imm8;
-        r.b[i * 2] = (uint8_t)(val & 0xff);
-        r.b[i * 2 + 1] = (uint8_t)(val >> 8);
+        r.b[i * 2]     = (uint8_t) (val & 0xff);
+        r.b[i * 2 + 1] = (uint8_t) ((val >> 8) & 0xff);
     }
     return r;
 }
 
-/* Logical right shift each 64-bit lane by imm8 */
+/* Logical right shift each 64-bit lane by imm8; counts above 63 zero the result */
 static inline __m128i
 _mm_srli_epi64(const __m128i v, const int imm8)
 {
     __m128i r;
+    if ((unsigned int) imm8 > 63) {
+        memset(r.b, 0, 16);
+        return r;
+    }
     r.q[0] = v.q[0] >> imm8;
     r.q[1] = v.q[1] >> imm8;
     return r;
 }
 
-/* Logical left shift each 64-bit lane by imm8 */
+/* Logical left shift each 64-bit lane by imm8; counts above 63 zero the result */
 static inline __m128i
 _mm_slli_epi64(const __m128i v, const int imm8)
 {
     __m128i r;
+    if ((unsigned int) imm8 > 63) {
+        memset(r.b, 0, 16);
+        return r;
+    }
     r.q[0] = v.q[0] << imm8;
     r.q[1] = v.q[1] << imm8;
     return r;
@@ -687,7 +716,7 @@ _mm_cmpeq_epi8(const __m128i a, const __m128i b)
     return r;
 }
 
-/* Compare 16 bytes for less than; result byte is 0xFF if a < b, else 0x00 */
+/* Returns 1 if (M & V) is all zeros, 0 otherwise */
 #define _mm_test_all_zeros(M, V) _mm_testz_si128((M), (V))
 
 /* _mm_testz_si128: Returns 1 if (a & b) is all zeros, 0 otherwise. */
@@ -708,4 +737,4 @@ _mm_test_all_ones(const __m128i a)
     return (int) (((((t | (optblocker_u64 ^ -t)) >> 61) ^ optblocker_u64) >> 2) ^ 1);
 }
 
-#endif /* UNTRINSICS_H */
+#endif /* untrinsics_H */
