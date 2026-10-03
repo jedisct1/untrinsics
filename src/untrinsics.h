@@ -265,7 +265,7 @@ untrinsics_inv_mixcolumns(uint8_t s[16])
         int     i  = 4 * c;
         uint8_t a0 = s[i], a1 = s[i + 1], a2 = s[i + 2], a3 = s[i + 3];
         s[i]     = (uint8_t) (untrinsics_mul0e(a0) ^ untrinsics_mul0b(a1) ^ untrinsics_mul0d(a2) ^
-                          untrinsics_mul9(a3));
+                              untrinsics_mul9(a3));
         s[i + 1] = (uint8_t) (untrinsics_mul9(a0) ^ untrinsics_mul0e(a1) ^ untrinsics_mul0b(a2) ^
                               untrinsics_mul0d(a3));
         s[i + 2] = (uint8_t) (untrinsics_mul0d(a0) ^ untrinsics_mul9(a1) ^ untrinsics_mul0e(a2) ^
@@ -401,7 +401,7 @@ _mm_clmulepi64_si128(const __m128i a, const __m128i b, const int imm)
 
 /* Load 128 bits from unaligned memory */
 static inline __m128i
-_mm_loadu_si128(const void* const p)
+_mm_loadu_si128(const void *const p)
 {
     __m128i r;
     memcpy(r.b, p, 16);
@@ -410,7 +410,7 @@ _mm_loadu_si128(const void* const p)
 
 /* Store 128 bits to unaligned memory */
 static inline void
-_mm_storeu_si128(void* const p, const __m128i a)
+_mm_storeu_si128(void *const p, const __m128i a)
 {
     memcpy(p, a.b, 16);
 }
@@ -569,7 +569,7 @@ _mm_shuffle_epi8(const __m128i a, const __m128i b)
 
 /* Load 64 bits from unaligned memory; zero upper half */
 static inline __m128i
-_mm_loadu_si64(const void* const mem_addr)
+_mm_loadu_si64(const void *const mem_addr)
 {
     __m128i r;
     memcpy(r.b, mem_addr, 8);
