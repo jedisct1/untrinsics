@@ -455,40 +455,42 @@ _mm_set_epi64x(const long long high, const long long low)
     return r;
 }
 
-/* Shift left by imm bytes (zero-fill) */
+/* Shift left by imm[7:0] bytes (zero-fill); counts above 15 zero the result */
 static inline __m128i
 _mm_slli_si128(const __m128i a, const int imm)
 {
-    __m128i r;
-    if (imm <= 0)
+    const unsigned int n = (unsigned int) imm & 0xff;
+    __m128i            r;
+    if (n == 0)
         return a;
-    if (imm >= 16) {
+    if (n > 15) {
         memset(r.b, 0, 16);
         return r;
     }
-    memset(r.b, 0, imm);
-    memcpy(r.b + imm, a.b, 16 - imm);
+    memset(r.b, 0, n);
+    memcpy(r.b + n, a.b, 16 - n);
     return r;
 }
 
-/* Shift right by imm bytes (zero-fill) */
+/* Shift right by imm[7:0] bytes (zero-fill); counts above 15 zero the result */
 static inline __m128i
 _mm_srli_si128(const __m128i a, const int imm)
 {
-    __m128i r;
-    if (imm <= 0)
+    const unsigned int n = (unsigned int) imm & 0xff;
+    __m128i            r;
+    if (n == 0)
         return a;
-    if (imm >= 16) {
+    if (n > 15) {
         memset(r.b, 0, 16);
         return r;
     }
-    memcpy(r.b, a.b + imm, 16 - imm);
-    memset(r.b + (16 - imm), 0, imm);
+    memcpy(r.b, a.b + n, 16 - n);
+    memset(r.b + (16 - n), 0, n);
     return r;
 }
 
 #ifndef _MM_SHUFFLE
-#    define _MM_SHUFFLE(z, y, x, w) (((z & 3) << 6) | ((y & 3) << 4) | ((x & 3) << 2) | (w & 3))
+#    define _MM_SHUFFLE(fp3, fp2, fp1, fp0) (((fp3) << 6) | ((fp2) << 4) | ((fp1) << 2) | (fp0))
 #endif
 
 /* Shuffle 32-bit words */
