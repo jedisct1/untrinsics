@@ -16,7 +16,8 @@ Bit-accurate with Intel’s original instructions
 - Drop-in replacements for a wide range of Intel intrinsics
 - AES-specific instructions like `_mm_aesenc_si128`, `_mm_aesdec_si128`, `_mm_aeskeygenassist_si128`, etc.
 - Implements `__m128i` with dual access as bytes, 32-bit words, and 64-bit words
-- Bitwise ops, shifting, and shuffle operations
+- Bitwise ops (including `_mm_andnot_si128`), shifting, `_mm_alignr_epi8`, 64-bit lane unpacking, and shuffle operations
+- 8, 32 and 64-bit lane addition, for ARX designs like ChaCha20 and BLAKE2
 - Suitable for test suites and cross-platform builds
 
 ---

@@ -445,6 +445,16 @@ _mm_and_si128(const __m128i a, const __m128i b)
     return r;
 }
 
+/* Bitwise AND of the complement of a with b: (~a) & b */
+static inline __m128i
+_mm_andnot_si128(const __m128i a, const __m128i b)
+{
+    __m128i r;
+    for (int i = 0; i < 16; i++)
+        r.b[i] = (uint8_t) (~a.b[i] & b.b[i]);
+    return r;
+}
+
 /* Set __m128i from two 64-bit integers (high, low) */
 static inline __m128i
 _mm_set_epi64x(const long long high, const long long low)
@@ -486,6 +496,41 @@ _mm_srli_si128(const __m128i a, const int imm)
     }
     memcpy(r.b, a.b + n, 16 - n);
     memset(r.b + (16 - n), 0, n);
+    return r;
+}
+
+/* Concatenate a (high) and b (low) into 32 bytes, shift right by imm[7:0] bytes
+   (zero-fill) and return the low 16 bytes; counts above 31 zero the result */
+static inline __m128i
+_mm_alignr_epi8(const __m128i a, const __m128i b, const int imm)
+{
+    const unsigned int n = (unsigned int) imm & 0xff;
+    uint8_t            t[32];
+    __m128i            r;
+    memcpy(t, b.b, 16);
+    memcpy(t + 16, a.b, 16);
+    for (unsigned int i = 0; i < 16; i++)
+        r.b[i] = (i + n < 32) ? t[i + n] : 0;
+    return r;
+}
+
+/* Interleave the low 64-bit lanes: result = (b[63:0] << 64) | a[63:0] */
+static inline __m128i
+_mm_unpacklo_epi64(const __m128i a, const __m128i b)
+{
+    __m128i r;
+    memcpy(r.b, a.b, 8);
+    memcpy(r.b + 8, b.b, 8);
+    return r;
+}
+
+/* Interleave the high 64-bit lanes: result = (b[127:64] << 64) | a[127:64] */
+static inline __m128i
+_mm_unpackhi_epi64(const __m128i a, const __m128i b)
+{
+    __m128i r;
+    memcpy(r.b, a.b + 8, 8);
+    memcpy(r.b + 8, b.b + 8, 8);
     return r;
 }
 
@@ -699,6 +744,17 @@ _mm_sub_epi8(const __m128i a, const __m128i b)
     __m128i r;
     for (int i = 0; i < 16; i++)
         r.b[i] = (uint8_t) (a.b[i] - b.b[i]);
+    return r;
+}
+
+/* Add 32-bit integers in two __m128i values */
+static inline __m128i
+_mm_add_epi32(const __m128i a, const __m128i b)
+{
+    __m128i r;
+    for (int i = 0; i < 4; i++)
+        untrinsics_store32(r.b + 4 * i,
+                           untrinsics_load32(a.b + 4 * i) + untrinsics_load32(b.b + 4 * i));
     return r;
 }
 
