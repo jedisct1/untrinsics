@@ -110,7 +110,7 @@ untrinsics_sbox(const uint8_t x)
 
     for (int i = 0; i < 256; i++) {
         uint32_t diff = (uint32_t) (i ^ x);
-        uint32_t mask = (((diff - 1) >> 29) ^ optblocker_u32) >> 2;
+        uint32_t mask = (((uint32_t) (diff - 1) >> 29) ^ optblocker_u32) >> 2;
         result |= UNTRINSICS_SBOX[i] & -(uint8_t) mask;
     }
     return result;
@@ -124,7 +124,7 @@ untrinsics_inv_sbox(const uint8_t x)
 
     for (int i = 0; i < 256; i++) {
         uint32_t diff = (uint32_t) (i ^ x);
-        uint32_t mask = (((diff - 1) >> 29) ^ optblocker_u32) >> 2;
+        uint32_t mask = (((uint32_t) (diff - 1) >> 29) ^ optblocker_u32) >> 2;
         result |= UNTRINSICS_INV_SBOX[i] & -(uint8_t) mask;
     }
     return result;
@@ -604,7 +604,7 @@ _mm_setr_epi8(const int8_t b0, const int8_t b1, const int8_t b2, const int8_t b3
     return r;
 }
 
-/* Set __m128i from 16 int values */
+/* Set __m128i from 4 int values */
 static inline __m128i
 _mm_setr_epi32(const int e0, const int e1, const int e2, const int e3)
 {
