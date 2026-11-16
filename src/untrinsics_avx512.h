@@ -12,7 +12,7 @@
 
 #include <stdint.h>
 #ifndef __untrinsics__ /* untrinsics.h */
-#    if defined(__AES__) || (defined(_MSC_VER) && defined(__AVX__))
+#    if defined(__AES__) || (defined(_MSC_VER) && defined(__AVX2__))
 #        include <smmintrin.h>
 #        include <wmmintrin.h>
 #    else
